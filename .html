@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Free AI video generator. Transform text into videos instantly." />
+    <title>AI Video Generator - Free Text to Video</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: rotate 1s linear infinite;
+        }
+        @keyframes appear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: appear 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+
+    <nav class="bg-black bg-opacity-20 backdrop-blur-md border-b border-white border-opacity-10">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🎬</span>
+                    <span class="text-white font-bold text-xl">AI Video Generator</span>
+                </div>
+                <a href="https://github.com" target="_blank" class="text-purple-300 hover:text-white text-sm">
+                    ⭐ GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        
+        <div class="text-center mb-12 fade-in">
+            <h1 class="text-5xl md:text-6xl font-bold text-white mb-4">
+                Turn Text into Video with AI
+            </h1>
+            <p class="text-purple-200 text-xl mb-6">
+                Free, fast, and easy to use. No installation required.
+            </p>
+            <div class="flex gap-4 justify-center flex-wrap">
+                <span class="bg-white bg-opacity-10 px-4 py-2 rounded-full text-white text-sm">
+                    ✓ 100% Free
+                </span>
+                <span class="bg-white bg-opacity-10 px-4 py-2 rounded-full text-white text-sm">
+                    ✓ No Signup
+                </span>
+                <span class="bg-white bg-opacity-10 px-4 py-2 rounded-full text-white text-sm">
+                    ✓ Privacy First
+                </span>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+            
+            <div class="md:col-span-2 bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20">
+                
+                <div id="apiSection" class="mb-6 p-4 bg-blue-500 bg-opacity-20 rounded-lg border border-blue-400 border-opacity-30">
+                    <h3 class="text-white font-semibold mb-2">Step 1: Enter Your API Key</h3>
+                    <p class="text-blue-200 text-sm mb-3">
+                        Get your free key from 
+                        <a href="https://huggingface.co/settings/tokens" target="_blank" class="underline font-semibold">Hugging Face</a>
+                    </p>
+                    <input
+                        type="password"
+                        id="apiKey"
+                        placeholder="hf_xxxxxxxxxxxxx"
+                        class="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                    <p class="text-xs text-blue-300 mt-2">Your key stays in your browser only</p>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-white font-semibold mb-3">
+                        Step 2: Describe Your Video
+                    </label>
+                    <textarea
+                        id="prompt"
+                        rows="5"
+                        placeholder="A golden retriever playing in a sunny park with butterflies..."
+                        class="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-30 rounded-lg text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+                    ></textarea>
+                    <div class="flex gap-2 mt-3 flex-wrap">
+                        <button onclick="fillPrompt('A cat playing with yarn')" class="text-xs bg-purple-500 bg-opacity-30 text-purple-200 px-3 py-1 rounded-full hover:bg-opacity-50">
+                            🐱 Cat
+                        </button>
+                        <button onclick="fillPrompt('Ocean waves at sunset')" class="text-xs bg-blue-500 bg-opacity-30 text-blue-200 px-3 py-1 rounded-full hover:bg-opacity-50">
+                            🌊 Ocean
+                        </button>
+                        <button onclick="fillPrompt('Hummingbird near flowers')" class="text-xs bg-green-500 bg-opacity-30 text-green-200 px-3 py-1 rounded-full hover:bg-opacity-50">
+                            🦜 Bird
+                        </button>
+                    </div>
+                </div>
+
+                <button
+                    id="generateBtn"
+                    onclick="generateVideo()"
+                    class="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-4 px-6 rounded-lg shadow-lg"
+                >
+                    Generate Video
+                </button>
+
+                <div id="progress" class="mt-4 hidden">
+                    <div class="bg-white bg-opacity-10 rounded-full h-2 overflow-hidden">
+                        <div id="progressBar" class="bg-gradient-to-r from-purple-500 to-blue-500 h-full transition-all" style="width: 0%"></div>
+                    </div>
+                    <p id="progressText" class="text-purple-300 text-sm text-center mt-2">Loading...</p>
+                </div>
+
+                <div id="error" class="mt-6 p-4 bg-red-500 bg-opacity-20 border border-red-400 border-opacity-30 rounded-lg hidden">
+                    <p id="errorText" class="text-red-200"></p>
+                </div>
+
+                <div id="result" class="mt-8 hidden fade-in">
+                    <div class="bg-black bg-opacity-30 rounded-lg p-4">
+                        <video id="video" controls autoplay loop class="w-full rounded-lg"></video>
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        <button
+                            onclick="downloadVideo()"
+                            class="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg"
+                        >
+                            Download
+                        </button>
+                        <button
+                            onclick="shareVideo()"
+                            class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg"
+                        >
+                            Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 border border-white border-opacity-20">
+                    <h3 class="text-white font-bold text-lg mb-4">📖 Quick Guide</h3>
+                    <ol class="text-purple-200 text-sm space-y-2">
+                        <li>1. Get free API key</li>
+                        <li>2. Enter it above</li>
+                        <li>3. Describe video</li>
+                        <li>4. Wait 30–90 seconds (depends on model)</li>
+                        <li>5. Download result</li>
+                    </ol>
+                </div>
+
+                <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-6 border border-white border-opacity-20">
+                    <h3 class="text-white font-bold text-lg mb-4">💡 Tips</h3>
+                    <ul class="text-purple-200 text-sm space-y-2">
+                        <li>✓ Be specific</li>
+                        <li>✓ Include colors</li>
+                        <li>✓ Describe actions</li>
+                        <li>✓ Keep it simple</li>
+                        <li>✓ Be patient</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-500 from-opacity-20 to-blue-500 to-opacity-20 backdrop-blur-lg rounded-2xl p-6 border border-white border-opacity-20">
+                    <h3 class="text-white font-bold text-lg mb-4">🎉 Features</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between text-purple-200">
+                            <span>Cost:</span>
+                            <span class="font-bold text-green-300">$0</span>
+                        </div>
+                        <div class="flex justify-between text-purple-200">
+                            <span>Speed:</span>
+                            <span class="font-bold text-white">30-90s</span>
+                        </div>
+                        <div class="flex justify-between text-purple-200">
+                            <span>Privacy:</span>
+                            <span class="font-bold text-green-300">100%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center text-purple-300 text-sm py-8 mt-8 border-t border-white border-opacity-10">
+            <p class="mb-2">Made with AI | Free Forever</p>
+            <p class="text-xs text-purple-400">Powered by Hugging Face</p>
+        </footer>
+    </div>
+
+    <script>
+        /**
+         * IMPORTANT:
+         * - Replace MODEL_NAME with the text-to-video model you want to use.
+         *   Example model names (subject to availability): "damo/text-to-video-ms-1.0"
+         *   or any other text->video HF model. If you don't know which model, check
+         *   Hugging Face model hub and pick a text-to-video model.
+         *
+         * - This example calls the Hugging Face Inference API. You must provide a valid
+         *   Hugging Face token in the input above (hf_xxx).
+         *
+         * - Browser-based direct API calls can expose the key in devtools; use only for testing
+         *   or in environments you control. For production, proxy requests through your backend.
+         */
+
+        // Default model variable — replace or allow user to modify:
+        const MODEL_NAME = "REPLACE_WITH_TEXT_TO_VIDEO_MODEL"; // e.g. "damo/text-to-video-ms-1.0"
+
+        let savedVideoBlob = null;
+        let fakeProgressTimer = null;
+
+        function fillPrompt(text) {
+            document.getElementById('prompt').value = text;
+        }
+
+        function showError(msg) {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('error').classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        function setProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text || (percent + '%');
+        }
+
+        function startFakeProgress() {
+            // fake progress to give the user feedback while the API works
+            clearInterval(fakeProgressTimer);
+            let p = 5;
+            setProgress(p, 'Queued...');
+            fakeProgressTimer = setInterval(() => {
+                // increase slowly, but do not reach 100% (finish when response arrives)
+                p += Math.random() * 6; // small increments
+                if (p > 92) p = 92;
+                setProgress(Math.floor(p), 'Processing...');
+            }, 800);
+        }
+
+        function stopFakeProgress() {
+            clearInterval(fakeProgressTimer);
+            fakeProgressTimer = null;
+        }
+
+        async function generateVideo() {
+            hideError();
+            document.getElementById('result').classList.add('hidden');
+            savedVideoBlob = null;
+            document.getElementById('video').src = '';
+
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const prompt = document.getElementById('prompt').value.trim();
+
+            if (!apiKey) {
+                showError('Please add your Hugging Face API key in Step 1.');
+                return;
+            }
+            if (!prompt) {
+                showError('Please enter a description for the video.');
+                return;
+            }
+            if (MODEL_NAME === "REPLACE_WITH_TEXT_TO_VIDEO_MODEL") {
+                showError('Please set MODEL_NAME in the script to a text-to-video model (see the code comments).');
+                return;
+            }
+
+            // Update UI
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('generateBtn').classList.add('opacity-70', 'cursor-not-allowed');
+            document.getElementById('progress').classList.remove('hidden');
+            setProgress(2, 'Starting...');
+            startFakeProgress();
+
+            try {
+                // Prepare request payload — many HF models accept { "inputs": "..." } but some expect options
+                // You can add model-specific params here if the model supports them.
+                const body = {
+                    inputs: prompt,
+                    // Example parameters - adjust depending on model capabilities
+                    parameters: {
+                        // duration, fps, seed, etc. Uncomment and change if your model supports them.
+                        // duration: 3,
+                        // fps: 12
+                    }
+                };
+
+                // Send request to Hugging Face Inference API for the chosen model
+                const res = await fetch(`https://api-inference.huggingface.co/models/${encodeURIComponent(MODEL_NAME)}`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        Accept: '*/*',
+                        // Don't set content-type here to allow streaming in some responses,
+                        // but we'll send JSON so set it:
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                // If model returns JSON with error
+                const contentType = res.headers.get('content-type') || '';
+
+                if (!res.ok) {
+                    // try to parse error message
+                    let errText = `Request failed with status ${res.status}`;
+                    try {
+                        const j = await res.json();
+                        if (j && j.error) errText = j.error;
+                    } catch (e) {
+                        // ignore
+                    }
+                    throw new Error(errText);
+                }
+
+                // If the response is JSON, it might contain an URL or base64; otherwise binary video
+                if (contentType.includes('application/json')) {
+                    const json = await res.json();
+                    // Models may reply with { "error": "..."} or with a base64 video. Try to handle common patterns.
+                    if (json.error) {
+                        throw new Error(json.error);
+                    }
+
+                    // Example: some backends return { "generated_video": "data:video/mp4;base64,...." }
+                    // Or { "blob": "<base64>" } - adapt to your model's response format
+                    // We'll try to find the first base64 data URI in the JSON values:
+                    const values = Object.values(json);
+                    let dataUri = null;
+                    for (const v of values) {
+                        if (typeof v === 'string' && v.startsWith('data:video')) {
+                            dataUri = v;
+                            break;
+                        }
+                    }
+                    if (!dataUri) {
+                        // maybe the model returned a URL to the video
+                        const possibleUrl = Object.values(json).find(v => typeof v === 'string' && (v.startsWith('http') || v.startsWith('/')));
+                        if (possibleUrl) {
+                            // fetch the video from that URL
+                            const videoResp = await fetch(possibleUrl.toString());
+                            if (!videoResp.ok) throw new Error('Failed to fetch video from returned URL.');
+                            const ab = await videoResp.arrayBuffer();
+                            const blob = new Blob([ab], { type: videoResp.headers.get('content-type') || 'video/mp4' });
+                            savedVideoBlob = blob;
+                            showResultWithBlob(blob);
+                            return;
+                        }
+                    }
+                    if (!dataUri) {
+                        throw new Error('Unexpected JSON response format from model. Check the model docs for response format.');
+                    }
+                    // parse Data URI
+                    const base64 = dataUri.split(',')[1];
+                    const byteCharacters = atob(base64);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: 'video/mp4' });
+                    savedVideoBlob = blob;
+                    showResultWithBlob(blob);
+                    return;
+                }
+
+                // If the content is video/mp4 or other binary, get it as arrayBuffer
+                const buffer = await res.arrayBuffer();
+                const mime = contentType.split(';')[0] || 'video/mp4';
+                const blob = new Blob([buffer], { type: mime });
+                savedVideoBlob = blob;
+                showResultWithBlob(blob);
+            } catch (err) {
+                console.error(err);
+                showError(err.message || String(err));
+                stopFakeProgress();
+                setProgress(0, 'Failed');
+            } finally {
+                // restore button state
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        }
+
+        function showResultWithBlob(blob) {
+            stopFakeProgress();
+            setProgress(100, 'Done');
+            // show result area
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('progress').classList.add('hidden');
+            const videoEl = document.getElementById('video');
+            const url = URL.createObjectURL(blob);
+            videoEl.src = url;
+            videoEl.load();
+            videoEl.play().catch(() => { /* autoplay might be blocked */ });
+            // keep blob for download/sharing
+            savedVideoBlob = blob;
+        }
+
+        function downloadVideo() {
+            if (savedVideoBlob) {
+                const link = document.createElement('a');
